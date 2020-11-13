@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="static/js/echarts.js"></script>
+    <title>数据透视表</title>
+</head>
+<body class="bg-light">
+<h1 class="text-center text-muted">全部有效数据聚合分类</h1>
+<p class="text-center text-muted"><a href="/">返回首页</a></p>
+{% for i in data %}
+    <p class="text-center text-muted">视频链接：{{ i[0][0] }}，地区：{{ i[0][1] }}</p>
+    <table class="table table-striped table-hover text-center">
+    <tr>
+        <th>时间</th>
+        <th>链接</th>
+        <th>点击次数</th>
+        <th>IP</th>
+        <th>地区</th>
+        <th>经纬度</th>
+    </tr>
+    {% for j in i[1] %}
+    <tr>
+            <th>{{ j[0] }}</th>
+            <th>{{ j[1] }}</th>
+            <th>{{ j[2] }}</th>
+            <th>{{ j[3] }}</th>
+            <th>{{ j[4] }}</th>
+            <th>{{ j[5] }}</th>
+        </tr>
+    {% endfor %}
+    <table/><br>
+{% endfor %}
+</body>
+</html>

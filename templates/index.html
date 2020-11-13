@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="static/js/echarts.js"></script>
+    <title>可视化结果</title>
+    <style>
+        div#main, div#list {
+            height: 400px;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<h1 class="text-center text-muted">MOOC大学用户日志可视化</h1>
+<p class="text-center text-muted"><a href="/source">原始数据</a>（共100万条，点击展示前5000条） | <a href="/data">有效数据</a>
+    （共889133条，点击展示前5000条）
+</p>
+<p class="text-center text-muted"><a href="/group">数据透视表</a></p>
+<div id="main">
+    <p class="text-center">部分数据展示：</p>
+    <table class="table table-striped table-hover text-center">
+        <tr>
+            <th>时间</th>
+            <th>链接</th>
+            <th>点击次数</th>
+            <th>IP</th>
+            <th>地区</th>
+            <th>经纬度</th>
+        </tr>
+        {% for i in data %}
+            <tr>
+                <td>{{ i[0] }}</td>
+                <td><a href="{{ i[1] }}" target="_blank">{{ i[1] }}</a></td>
+                <td>{{ i[2] }}</td>
+                <td>{{ i[3] }}</td>
+                <td>{{ i[4] }}</td>
+                <td>{{ i[5] }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+<br>
+<div class="row" style="height: 400px;">
+    <div class="col-sm-8" id="list">
+        <table class="table table-striped table-hover text-center">
+            <tr>
+                <th>链接</th>
+                <th>课程名称</th>
+                <th>点击次数</th>
+                <th>课程代号</th>
+            </tr>
+            {% for i in click %}
+                <tr>
+                    <td><a href="{{ i[0] }}" target="_blank">{{ i[0] }}</a></td>
+                    <td>{{ i[3] }}</td>
+                    <td>{{ i[1] }}</td>
+                    <td>{{ i[2] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div class="col-sm-4" id="sums">
+        <script>
+            var myChart = echarts.init(document.getElementById('sums'));
+            var option = {
+                title: {
+                    text: '用户日志数据',
+                    subtext: '已下架视频数据为无效数据',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                legend: {
+                    // orient: 'vertical',
+                    // top: 'middle',
+                    bottom: 10,
+                    left: 'center',
+                    data: ['有效数据', '无效数据']
+                },
+                series: [
+                    {
+                        name: '视频有效性',
+                        type: 'pie',
+                        radius: '65%',
+                        center: ['50%', '50%'],
+                        selectedMode: 'single',
+                        data: [
+                            {value: {{ valid }}, name: '有效数据'},
+                            {value: {{ unvalid }}, name: '无效数据'}
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        </script>
+    </div>
+</div>
+</div>
+<br>
+<div class="row" style="height: 500px;">
+    <div class="col-sm-8" id="popular">
+        <script>
+            var myChart = echarts.init(document.getElementById('popular'));
+            var option = {
+                title: {
+                    text: '课程受欢迎程度',
+                    subtext: '点击次数统计',
+                    left: 'center'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: [
+                        {% for i in click %}
+                            {{ i[2]|tojson }},
+                        {% endfor %}
+                    ]
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [
+                        {% for i in click %}
+                            {{ i[1] }},
+                        {% endfor %}
+                    ],
+                    type: 'bar',
+                    showBackground: true,
+                    backgroundStyle: {
+                        color: 'rgba(220, 220, 220, 0.8)'
+                    }
+                }]
+            };
+            myChart.setOption(option);
+        </script>
+    </div>
+    <div class="col-sm-4" id="local">
+        <script>
+            var myChart = echarts.init(document.getElementById('local'));
+            option = {
+                title: {
+                    text: '访问城市分布',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                legend: {
+                    bottom: 10,
+                    left: 'center',
+                    data: {{ local_1|tojson }}
+                },
+                series: [
+                    {
+                        name: '访问地区',
+                        type: 'pie',
+                        radius: '65%',
+                        center: ['50%', '50%'],
+                        selectedMode: 'single',
+                        data: [
+                            {value: {{ local_2[0] }}, name: {{ local_1[0]|tojson }}},
+                            {value: {{ local_2[1] }}, name: {{ local_1[1]|tojson }}},
+                            {value: {{ local_2[2] }}, name: {{ local_1[2]|tojson }}},
+                            {value: {{ local_2[3] }}, name: {{ local_1[3]|tojson }}},
+                            {value: {{ local_2[4] }}, name: {{ local_1[4]|tojson }}}
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        </script>
+    </div>
+</div>
+</body>
+</html>
